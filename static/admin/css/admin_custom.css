@@ -1,0 +1,13 @@
+/* Custom modal styles for Django Jazzmin */
+
+/* Prevent column headers from wrapping */
+table thead th {
+    white-space: nowrap !important;
+}
+
+table thead th div a{
+    color: #64748b !important;
+}
+table tbody tr td{
+    white-space: nowrap !important;
+}

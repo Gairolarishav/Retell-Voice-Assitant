@@ -1,0 +1,7 @@
+/* Custom modal styles for Django Jazzmin */
+
+.table thead th {
+    color: #64748b;
+    border-bottom: 0;
+    white-space: nowrap !important;
+}
