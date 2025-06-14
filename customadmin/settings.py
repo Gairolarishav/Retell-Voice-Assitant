@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-int_#b&y45ky37)5#8u3y1w^oowv#rhmvr^xc8olq(ax@n9j@i'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -186,4 +186,4 @@ JAZZMIN_SETTINGS = {
     "custom_css": "admin/css/admin_custom.css",
 }
 
-RETELL_API_KEY = "key_47ef1e9b4541f1ccde41d7744438"
+RETELL_API_KEY = ""
