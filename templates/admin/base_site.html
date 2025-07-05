@@ -1,0 +1,337 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+
+{% block extrahead %}
+  {{ block.super }}
+  <!-- Load jQuery before any scripts that use $ -->
+  <link rel="icon" type="image/png" href="{% static 'favicon/favicon-96x96.png' %}" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon/favicon.svg' %}" />
+  <link rel="shortcut icon" href="{% static 'favicon/favicon.ico' %}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}" />
+  <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'admin/js/transcript_modal.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'admin/css/base_site.css' %}">
+
+{% endblock %}
+
+{% block modal %}
+{{ block.super }}
+<!-- Demo Modal HTML -->
+<div class="modal fade" id="demoModal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title text-center w-100" id="demoModalLabel">🤖 Voice Assistant Demo</h5>
+        <button type="button" class="styled-close-btn" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <div class="p-3 bg-light border rounded">
+          <h5 class="text-primary">📞 Request a Demo Call</h5>
+          <p>Get a personalized walkthrough of our Voice Assistant system!</p>
+
+          <!-- Call Status Display -->
+          <div id="callStatus" class="alert alert-info d-none"></div>
+
+          <!-- Form -->
+          <form id="demoCallForm" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="demoName" class="form-label fw-bold">Full Name *</label>
+              <input type="text" class="form-control" id="demoName" name="name" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="demoPhone" class="form-label fw-bold">Phone Number *</label>
+              <input type="tel" class="form-control" id="demoPhone" name="phone" 
+                     placeholder="Enter your phone number (e.g., +1234567890)"
+                     pattern="^\+?[1-9]\d{1,14}$" title="Please enter a valid phone number with country code" required>
+            </div>
+
+            <button type="submit" id="callButton" class="btn btn-success w-100">
+              <span id="buttonText">📞 Start Demo Call</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- demoModal end -->
+
+ <!-- Language Change Modal -->
+  <div class="modal fade" id="languageModal" tabindex="-1" role="dialog" aria-labelledby="languageModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered" role="document" style="z-index: 1060;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="languageModalLabel">
+            <i class="fas fa-language"></i> Change Agent Language
+          </h5>
+          <button type="button" class="styled-close-btn" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+        </div>
+        <form id="languageForm">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="agentName"><strong>Agent Name:</strong></label>
+                  <p id="agentName" class="form-control-plaintext text-info"></p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="currentLanguage"><strong>Current Language:</strong></label>
+                  <p id="currentLanguage" class="form-control-plaintext">
+                    <span class="badge badge-secondary" id="currentLangBadge"></span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="newLanguage"><strong>Select New Language:</strong></label>
+                  <select class="form-select" name="language" id="languageSelect" required>
+                    <option value="en-US">English (US)</option>
+                    <option value="en-IN">English (India)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="en-AU">English (Australia)</option>
+                    <option value="en-NZ">English (New Zealand)</option>
+                    <option value="de-DE">German</option>
+                    <option value="es-ES">Spanish (Spain)</option>
+                    <option value="es-419">Spanish (Latin America)</option>
+                    <option value="hi-IN">Hindi</option>
+                    <option value="fr-FR">French</option>
+                    <option value="fr-CA">French (Canada)</option>
+                    <option value="ja-JP">Japanese</option>
+                    <option value="pt-PT">Portuguese (Portugal)</option>
+                    <option value="pt-BR">Portuguese (Brazil)</option>
+                    <option value="zh-CN">Chinese (Simplified)</option>
+                    <option value="ru-RU">Russian</option>
+                    <option value="it-IT">Italian</option>
+                    <option value="ko-KR">Korean</option>
+                    <option value="nl-NL">Dutch</option>
+                    <option value="pl-PL">Polish</option>
+                    <option value="tr-TR">Turkish</option>
+                    <option value="vi-VN">Vietnamese</option>
+                    <option value="ro-RO">Romanian</option>
+                    <option value="bg-BG">Bulgarian</option>
+                    <option value="ca-ES">Catalan</option>
+                    <option value="da-DK">Danish</option>
+                    <option value="fi-FI">Finnish</option>
+                    <option value="el-GR">Greek</option>
+                    <option value="hu-HU">Hungarian</option>
+                    <option value="id-ID">Indonesian</option>
+                    <option value="no-NO">Norwegian</option>
+                    <option value="sk-SK">Slovak</option>
+                    <option value="sv-SE">Swedish</option>
+                    <option value="multi">Multilingual</option>
+                    </select>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="agentId" name="agent_id">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Update Language
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+<!-- End of language list -->
+
+<!--transcriptModal Bootstrap Modal -->
+  <div id="transcriptPanel" class="transcript-panel">
+    <div class="transcript-header">
+        <h5>📄 Transcript</h5>
+        <button onclick="closeTranscriptPanel()" class="styled-close-btn" aria-label="Close">&times;</button>
+
+    </div>
+    <div class="transcript-body" id="transcriptContent">
+        Loading...
+    </div>
+  </div>
+<!--transcriptModal Bootstrap Modalend -->
+
+<!-- Floating Action Button -->
+<div class="floating-action">
+    <button class="fab" data-bs-toggle="modal" data-bs-target="#demoModal">
+        <i class="fas fa-phone"></i>
+    </button>
+</div>
+
+<script>
+
+// Pre-fill modal inputs when "Change Language" button is clicked
+  $('#languageModal').on('show.bs.modal', function (event) {
+    const button = $(event.relatedTarget);
+    console.log("button====", button)
+    const agentId = button.data('agent-id');
+    const currentLang = button.data('current-language');
+    var agentName = button.data('agent-name')
+
+    $('#agentId').val(agentId);
+    $('#languageSelect').val(currentLang);
+    $('#agentName').text(agentName);
+    $('#currentLangBadge').text(currentLang);
+
+  });
+
+  // Submit form via AJAX
+  $('#languageForm').on('submit', function (e) {
+    e.preventDefault();
+
+    $.ajax({
+      url: "{% url 'update_agent' %}",  // Replace with your URL name
+      method: "POST",
+      data: $(this).serialize(),
+      success: function (response) {
+        if (response.success) {
+          // Close modal and reload agent list
+          $('#languageModal').modal('hide');
+          window.location.href = "{% url 'agent_list' %}";
+        } else {
+          alert("Update failed: " + response.message);
+        }
+      },
+      error: function () {
+        alert("Something went wrong.");
+      }
+    });
+  });
+
+
+function resetDemoModal() {
+  const form = document.getElementById('demoCallForm');
+  const status = document.getElementById('callStatus');
+  const button = document.getElementById('callButton');
+  const buttonText = document.getElementById('buttonText');
+
+  if (form) form.reset();
+  if (status) {
+      status.textContent = '';
+      status.className = 'call-status';
+      status.style.display = 'none';
+  }
+  if (button && buttonText) {
+      button.classList.remove('button-loading');
+      button.disabled = false;
+      buttonText.textContent = '📞 Start Demo Call';
+  }
+}
+
+const demoModalEl = document.getElementById('demoModal');
+if (demoModalEl) {
+    demoModalEl.addEventListener('hidden.bs.modal', () => {
+        resetDemoModal();
+    });
+}
+
+// Handle demo call form submission
+const demoForm = document.getElementById('demoCallForm');
+  if (demoForm) {
+      demoForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          initiateDemo();
+    });
+}
+
+// Demo call initiation
+async function initiateDemo() {
+    const name = document.getElementById('demoName').value.trim();
+    const phone = document.getElementById('demoPhone').value.trim();
+    const button = document.getElementById('callButton');
+    const buttonText = document.getElementById('buttonText');
+    const status = document.getElementById('callStatus');
+    
+    // Validation
+    if (!name || !phone) {
+        showStatus('Please fill in all required fields.', 'error');
+        return;
+    }
+    
+    // Phone number validation
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    if (!phoneRegex.test(phone)) {
+        showStatus('Please enter a valid phone number with country code (e.g., +1234567890).', 'error');
+        return;
+    }
+    
+    // Show loading state
+    button.classList.add('button-loading');
+    buttonText.textContent = 'Initiating Call...';
+    button.disabled = true;
+    showStatus('Connecting your call...', 'loading');
+    
+    try {
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Make API call to Django backend
+        const response = await fetch('/retells/api/retell-call/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                name: name,
+                phone: phone
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showStatus(`✅ Demo call initiated successfully! You should receive a call shortly at ${phone}.`, 'success');
+            console.log('Call initiated:', data);
+            
+            // Optional: Close modal after delay
+            setTimeout(() => {
+                $('#demoModal').modal("hide");
+                resetDemoModal();  // <- resets even if not closed manually
+            }, 3000);
+            
+        } else {
+            showStatus(`❌ Error initiating call: ${data.error || 'Unknown error occurred'}`, 'error');
+            console.error('Call failed:', data);
+        }
+        
+    } catch (error) {
+        console.error('Network error:', error);
+        showStatus('❌ Network error. Please check your connection and try again.', 'error');
+    } finally {
+        // Reset button state
+        button.classList.remove('button-loading');
+        button.disabled = false;
+        buttonText.textContent = '📞 Start Demo Call';
+    }
+}
+
+function showStatus(message, type) {
+    const status = document.getElementById('callStatus');
+    if (status) {
+        status.textContent = message;
+        status.className = `call-status ${type}`;
+        status.style.display = 'block';
+    }
+}
+
+</script>
+{% endblock %}

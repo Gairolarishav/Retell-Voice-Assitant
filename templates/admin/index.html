@@ -1,0 +1,456 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.metric-card.success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+.metric-card.warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.metric-card.info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.metric-card.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+.metric-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.metric-icon {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 2.5rem;
+    opacity: 0.3;
+}
+
+.growth-indicator {
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.growth-up { color: #4ade80; }
+.growth-down { color: #f87171; }
+
+.dashboard-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header-custom {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.activity-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.3s ease;
+}
+
+.activity-item:hover {
+    background-color: #f8fafc;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-success { background-color: #dcfce7; color: #166534; }
+.status-danger { background-color: #fef2f2; color: #dc2626; }
+.status-warning { background-color: #fef3c7; color: #d97706; }
+.status-info { background-color: #dbeafe; color: #2563eb; }
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    padding: 20px;
+}
+
+.agent-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.progress-ring {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: conic-gradient(#4ade80 0deg, #4ade80 var(--progress, 0deg), #e5e7eb var(--progress, 0deg));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.progress-ring::before {
+    content: '';
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+}
+
+.progress-text {
+    position: relative;
+    z-index: 1;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.real-time-indicator {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    margin-right: 8px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block content_title %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-tachometer-alt mr-2"></i>
+        {% trans 'Dashboard' %}
+        <div class="real-time-indicator ml-3"></div>
+        <small class="text-muted">Live</small>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card success animate__animated animate__fadeInUp">
+                <div class="metric-icon"><i class="fas fa-users"></i></div>
+                <div class="metric-label">Total Leads</div>
+                <div class="metric-number" data-count="{{ total_leads }}">0</div>
+                <div class="growth-indicator">
+                    <i class="fas fa-arrow-up growth-up"></i> Active Pipeline
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card info animate__animated animate__fadeInUp" style="animation-delay: 0.1s">
+                <div class="metric-icon"><i class="fas fa-phone"></i></div>
+                <div class="metric-label">Calls Today</div>
+                <div class="metric-number" data-count="{{ total_calls_today }}">0</div>
+                <div class="growth-indicator">
+                    {% if weekly_growth > 0 %}
+                        <i class="fas fa-arrow-up growth-up"></i> +{{ weekly_growth }}% from last week
+                    {% else %}
+                        <i class="fas fa-arrow-down growth-down"></i> {{ weekly_growth }}% from last week
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card warning animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="metric-label">Success Rate</div>
+                <div class="metric-number" data-count="{{ success_rate }}">0</div>
+                <div class="growth-indicator">
+                    <i class="fas fa-percentage"></i> Today's Performance
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card primary animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                <div class="metric-label">Avg Duration</div>
+                <div class="metric-number" data-count="{{ avg_duration_minutes }}">0</div>
+                <div class="growth-indicator">
+                    <i class="fas fa-stopwatch"></i> Minutes per call
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Charts Section -->
+        <div class="col-lg-8">
+            <!-- Daily Call Volume Chart -->
+            <div class="dashboard-card animate__animated animate__fadeInLeft">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="fas fa-chart-area mr-2"></i>Daily Call Volume</h5>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dailyCallsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Call Outcomes Distribution -->
+            <div class="dashboard-card animate__animated animate__fadeInLeft" style="animation-delay: 0.2s">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie mr-2"></i>Call Outcomes</h5>
+                </div>
+                <div class="chart-container">
+                    <canvas id="callOutcomesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Section -->
+        <div class="col-lg-4">
+            <!-- Agent Performance -->
+            <div class="dashboard-card animate__animated animate__fadeInRight">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="fas fa-trophy mr-2"></i>Voice Agents</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% for agent in agent_performance %}
+                    <div class="activity-item d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">{{ agent.agent_name }}</div>
+                            <small class="text-muted">{{ agent.total_calls }} calls • {{ agent.successful_calls }} successful</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-card animate__animated animate__fadeInRight" style="animation-delay: 0.2s">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="fas fa-history mr-2"></i>Recent Calls</h5>
+                </div>
+                <div class="card-body p-0" id="recentActivity">
+                    {% for call in recent_calls|slice:":5" %}
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="font-weight-bold">{{ call.lead.lead_name|default:"Unknown Lead" }}</div>
+                                <small class="text-muted">{{ call.lead.phone }} • {{ call.created_at|date:"d/m/Y" }}</small>
+                            </div>
+                            <div>
+                                {% if call.call_successful == 'True' %}
+                                    <span class="status-badge status-success">Success</span>
+                                {% elif call.call_successful == 'False' %}
+                                    <span class="status-badge status-danger">Failed</span>
+                                {% else %}
+                                    <span class="status-badge status-warning">Ongoing</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if call.user_sentiment %}
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-heart mr-1"></i>{{ call.user_sentiment|capfirst }}
+                            </small>
+                        </div>
+                        {% endif %}
+                        {% if call.duration %}
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-clock mr-1"></i>{{ call.duration }}s
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Counter Animation
+document.addEventListener('DOMContentLoaded', function() {
+    const counters = document.querySelectorAll('[data-count]');
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-count'));
+        const duration = 2000;
+        const step = target / (duration / 16);
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                counter.textContent = target;
+                clearInterval(timer);
+            } else {
+                counter.textContent = Math.floor(current);
+            }
+        }, 16);
+    });
+});
+
+// Daily Calls Chart
+const dailyCtx = document.getElementById('dailyCallsChart').getContext('2d');
+new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for day in daily_calls %}'{{ day.date }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Calls',
+            data: [{% for day in daily_calls %}{{ day.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Call Outcomes Chart
+const outcomesCtx = document.getElementById('callOutcomesChart').getContext('2d');
+new Chart(outcomesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for outcome in call_outcomes %}'{{ outcome.disconnection_reason|default:"Unknown" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for outcome in call_outcomes %}{{ outcome.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                '#667eea', '#764ba2', '#11998e', '#38ef7d', '#f093fb', '#f5576c'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Real-time updates
+function updateDashboard() {
+    fetch('/admin/')
+        .then(response => response.json())
+        .then(data => {
+            // Update real-time activity
+            const activityContainer = document.getElementById('recentActivity');
+            // Add new activities to the top
+            data.recent_activity.forEach(activity => {
+                const existingItems = activityContainer.querySelectorAll('.activity-item');
+                if (existingItems.length >= 5) {
+                    existingItems[existingItems.length - 1].remove();
+                }
+                
+                const newItem = document.createElement('div');
+                newItem.className = 'activity-item animate__animated animate__fadeInDown';
+                newItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="font-weight-bold">${activity.lead_name}</div>
+                            <small class="text-muted">Agent ${activity.agent_id} • ${activity.time}</small>
+                        </div>
+                        <div>
+                            <span class="status-badge status-${activity.status === 'ongoing' ? 'warning' : 'info'}">${activity.status}</span>
+                        </div>
+                    </div>
+                `;
+                activityContainer.insertBefore(newItem, activityContainer.firstChild);
+            });
+        });
+}
+
+// Update every 30 seconds
+setInterval(updateDashboard, 30000);
+
+// Quick call function
+function startQuickCall() {
+    alert('Quick call feature - integrate with your calling system!');
+}
+</script>
+{% endblock %}

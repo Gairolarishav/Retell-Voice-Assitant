@@ -1,0 +1,244 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <!-- Optional: Select2 CSS for better dropdown styling -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            function toggleFields() {
+                const callNow = document.querySelector('#id_call_now');
+                const schedTime = document.querySelector('#id_scheduled_time');
+
+                if (callNow.checked) {
+                    schedTime.value = '';
+                    schedTime.setAttribute('disabled', 'disabled');
+                } else {
+                    schedTime.removeAttribute('disabled');
+                }
+
+                if (schedTime.value) {
+                    callNow.checked = false;
+                    callNow.setAttribute('disabled', 'disabled');
+                } else {
+                    callNow.removeAttribute('disabled');
+                }
+            }
+
+            document.querySelector('#id_call_now')?.addEventListener('change', toggleFields);
+            document.querySelector('#id_scheduled_time')?.addEventListener('input', toggleFields);
+
+            toggleFields(); // Call once on page load
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-detect and set user's timezone
+            function detectAndSetTimezone() {
+                try {
+                    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const timezoneField = document.getElementById('id_timezone_field');
+                    
+                    if (timezoneField && userTimezone) {
+                        timezoneField.value = userTimezone;
+                        console.log('✅ Auto-detected timezone:', userTimezone);
+
+                        // Convert UTC time to local time for editing
+                        convertUTCToLocalTime(userTimezone);
+                        
+                        // Show timezone info to user
+                        showTimezoneInfo(userTimezone);
+                    }
+                } catch (error) {
+                    console.error('❌ Error detecting timezone:', error);
+                    // Fallback to UTC
+                    const timezoneField = document.getElementById('id_timezone_field');
+                    if (timezoneField) {
+                        timezoneField.value = 'UTC';
+                    }
+                }
+            }
+
+             // Convert UTC time to user's local time for editing
+            function convertUTCToLocalTime(userTimezone) {
+                const scheduledTimeInput = document.getElementById('id_scheduled_time');
+                
+                if (scheduledTimeInput && scheduledTimeInput.value) {
+                    try {
+                        // Get the current value (which is in UTC from database)
+                        const utcTimeString = scheduledTimeInput.value;
+                        
+                        // Create a UTC date object
+                        const utcDate = new Date(utcTimeString + 'Z'); // Add Z to ensure it's treated as UTC
+                        
+                        // Convert to user's timezone
+                        const localTimeString = utcDate.toLocaleString('sv-SE', {
+                            timeZone: userTimezone,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }).replace(' ', 'T');
+                        
+                        // Update the input field with local time
+                        scheduledTimeInput.value = localTimeString;
+                        
+                        console.log('🔄 Converted UTC to local time:');
+                        console.log('   UTC:', utcTimeString);
+                        console.log('   Local (' + userTimezone + '):', localTimeString);
+                        
+                    } catch (error) {
+                        console.error('❌ Error converting UTC to local time:', error);
+                    }
+                }
+            }
+    
+            
+            // Show timezone information to user
+            function showTimezoneInfo(timezone) {
+                const scheduledTimeField = document.querySelector('label[for="id_scheduled_time"]');
+                if (scheduledTimeField) {
+                    // Create or update timezone info
+                    let timezoneInfo = document.getElementById('timezone-info');
+                    if (!timezoneInfo) {
+                        timezoneInfo = document.createElement('div');
+                        timezoneInfo.id = 'timezone-info';
+                        timezoneInfo.style.cssText = `
+                            background: #e7f3ff;
+                            border: 1px solid #bee5eb;
+                            border-radius: 4px;
+                            padding: 8px 12px;
+                            margin-top: 5px;
+                            font-size: 12px;
+                            color: #0c5460;
+                        `;
+                        scheduledTimeField.parentNode.appendChild(timezoneInfo);
+                    }
+                    
+                    const currentTime = new Date().toLocaleString('en-US', {
+                        timeZone: timezone,
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                    
+                    timezoneInfo.innerHTML = `
+                        🌍 <strong>Detected Timezone:</strong> ${timezone}<br>
+                        🕒 <strong>Current Time:</strong> ${currentTime}
+                    `;
+                }
+            }
+            
+            // Update time display when scheduled time changes
+            function updateTimePreview() {
+                const scheduledTimeInput = document.getElementById('id_scheduled_time');
+                const timezoneField = document.getElementById('id_timezone_field');
+                
+                if (scheduledTimeInput && timezoneField && scheduledTimeInput.value) {
+                    try {
+                        const localTime = new Date(scheduledTimeInput.value);
+                        const timezone = timezoneField.value || 'UTC';
+                        
+                        // Show what time this will be in UTC
+                        const utcTime = localTime.toISOString().slice(0, 16).replace('T', ' ');
+                        
+                        let previewDiv = document.getElementById('time-preview');
+                        if (!previewDiv) {
+                            previewDiv = document.createElement('div');
+                            previewDiv.id = 'time-preview';
+                            previewDiv.style.cssText = `
+                                background: #fff3cd;
+                                border: 1px solid #ffeaa7;
+                                border-radius: 4px;
+                                padding: 6px 10px;
+                                margin-top: 5px;
+                                font-size: 11px;
+                                color: #856404;
+                            `;
+                            scheduledTimeInput.parentNode.appendChild(previewDiv);
+                        }
+                        
+                        previewDiv.innerHTML = `
+                            ⏰ <strong>Will be saved as:</strong> ${utcTime} UTC
+                        `;
+                    } catch (error) {
+                        console.error('Error updating time preview:', error);
+                    }
+                }
+            }
+            
+            // Initialize timezone detection
+            detectAndSetTimezone();
+            
+            // Add event listener for scheduled time changes
+            const scheduledTimeInput = document.getElementById('id_scheduled_time');
+            if (scheduledTimeInput) {
+                scheduledTimeInput.addEventListener('change', updateTimePreview);
+                scheduledTimeInput.addEventListener('input', updateTimePreview);
+            }
+            
+            // Add validation for call_now and scheduled_time
+            const callNowCheckbox = document.getElementById('id_call_now');
+            const scheduledTimeField = document.getElementById('id_scheduled_time');
+            
+            function toggleScheduledTime() {
+                if (callNowCheckbox && scheduledTimeField) {
+                    if (callNowCheckbox.checked) {
+                        scheduledTimeField.disabled = true;
+                        scheduledTimeField.value = '';
+                        scheduledTimeField.style.opacity = '0.5';
+                        
+                        // Hide time preview
+                        const previewDiv = document.getElementById('time-preview');
+                        if (previewDiv) {
+                            previewDiv.style.display = 'none';
+                        }
+                    } else {
+                        scheduledTimeField.disabled = false;
+                        scheduledTimeField.style.opacity = '1';
+                        
+                        // Show time preview
+                        const previewDiv = document.getElementById('time-preview');
+                        if (previewDiv) {
+                            previewDiv.style.display = 'block';
+                        }
+                    }
+                }
+            }
+            
+            if (callNowCheckbox) {
+                callNowCheckbox.addEventListener('change', toggleScheduledTime);
+                // Initial call
+                toggleScheduledTime();
+            }
+        });
+
+    </script>
+    <style>
+.timezone-detected {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    color: #155724;
+}
+
+.field-scheduled_time {
+    position: relative;
+}
+
+.time-info {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+}
+</style>
+
+{% endblock %}
