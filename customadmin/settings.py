@@ -33,7 +33,7 @@ RETELL_PHONE = config('RETELL_PHONE', default='')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Add to ALLOWED_HOSTS for ngrok
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '143.110.247.53','voiceai.codedock.site']
+ALLOWED_HOSTS = ["*"]
 
 # Add your ngrok domain to trusted origins
 CORS_ORIGIN_ALLOW_ALL = True
