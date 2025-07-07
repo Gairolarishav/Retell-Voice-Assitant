@@ -33,7 +33,7 @@ RETELL_PHONE = config('RETELL_PHONE', default='')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Add to ALLOWED_HOSTS for ngrok
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '143.110.247.53','voiceai.codedock.site']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '143.110.247.53','voiceai.codedock.site','*']
 
 # Add your ngrok domain to trusted origins
 CORS_ORIGIN_ALLOW_ALL = True
@@ -51,8 +51,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'retells',  # use the config class'django_apscheduler',
-    'voiceflow'
+    'AI_Assistant.apps.AI_AssistantConfig',
+    'FastPromos'
 
 ]
 
@@ -60,6 +62,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -171,14 +174,20 @@ JAZZMIN_SETTINGS = {
             "url": "/retells/agents/",
             "icon": "fas fa-robot",
         }],
-        "voiceflow": [{
-            "name": "custom-llm",
-            "url": "/voiceflow/custom-llm/",
-            "icon": "fas fa-robot",
-        },
+        "ai_assistant": [
+        # {
+        #     "name": "custom-llm",
+        #     "url": "custom_llm",
+        #     "icon": "fas fa-robot",
+        # },
+        # {
+        #     "name": "AI_Assistant-knowledgebase",
+        #     "url": "knowledgebase",
+        #     "icon": "fas fa-robot",
+        # },
         {
-            "name": "voiceflow-knowledgebase",
-            "url": "/voiceflow/voiceflow-knowledgebase/",
+            "name": "Chat Assistant Demo",
+            "url": "chatbot",
             "icon": "fas fa-robot",
         }]
     },

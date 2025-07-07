@@ -244,20 +244,4 @@ def RetellCallConcurrency():
         print("Error fetching concurrency:", e)
         return 0
     
-
-@api_view(['POST'])
-def voiceflow_webhook(request):
-    # Incoming JSON body
-    data = request.data
-
-    # Example: log it
-    print("voiceflow======", data)
-
-    # # Access fields
-    # message = data.get('message')
-    # user_id = data.get('userId')
-
-    # Do something...
-    return JsonResponse({'status': 'received'})
-    
     

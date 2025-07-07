@@ -219,55 +219,57 @@
                         </div>
                     </div>
 
-                    <nav class="mt-2">
-                        <ul class="nav nav-pills nav-sidebar flex-column {{ jazzmin_ui.sidebar_list_classes }}" data-widget="treeview" role="menu" data-collapsible="false">
+                    <div class="sidebar-scroll" style="max-height: calc(100vh - 150px); overflow-y: auto;">
+                        <nav class="mt-2">
+                            <ul class="nav nav-pills nav-sidebar flex-column {{ jazzmin_ui.sidebar_list_classes }}" data-widget="treeview" role="menu" data-collapsible="false">
 
-                            <li class="nav-item">
-                                <a href="{% url 'admin:index' %}" class="nav-link">
-                                    <i class="nav-icon fas fa-th-large"></i>
-                                    <p>{% trans 'Dashboard' %}</p>
-                                </a>
-                            </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'admin:index' %}" class="nav-link">
+                                        <i class="nav-icon fas fa-th-large"></i>
+                                        <p>{% trans 'Dashboard' %}</p>
+                                    </a>
+                                </li>
 
-                            {% if jazzmin_settings.navigation_expanded %}
-                                {% for app in side_menu_list %}
-                                    <li class="nav-header">{{ app.name }}</li>
-                                    {% for model in app.models %}
-                                        <li class="nav-item">
-                                            {% if model.url %}
-                                            <a href="{{ model.url }}" class="nav-link">
-                                                <i class="nav-icon {{ model.icon }}"></i> <p>{{ model.name }}</p>
+                                {% if jazzmin_settings.navigation_expanded %}
+                                    {% for app in side_menu_list %}
+                                        <li class="nav-header">{{ app.name }}</li>
+                                        {% for model in app.models %}
+                                            <li class="nav-item">
+                                                {% if model.url %}
+                                                <a href="{{ model.url }}" class="nav-link">
+                                                    <i class="nav-icon {{ model.icon }}"></i> <p>{{ model.name }}</p>
+                                                </a>
+                                            {% else %}
+                                                <span class="nav-link disabled">
+                                                    <i class="nav-icon {{ model.icon }}"></i> <p>{{ model.name }}</p>
+                                                </span>
+                                            {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% else %}
+                                    {% for app in side_menu_list %}
+                                        <li class="nav-item has-treeview">
+                                            <a href="#" class="nav-link">
+                                                <i class="nav-icon {{ app.icon }}"></i>
+                                                <p>{{ app.name|truncatechars:21 }} <i class="fas fa-angle-left right"></i></p>
                                             </a>
-                                        {% else %}
-                                            <span class="nav-link disabled">
-                                                <i class="nav-icon {{ model.icon }}"></i> <p>{{ model.name }}</p>
-                                            </span>
-                                        {% endif %}
+                                            <ul class="nav nav-treeview" style="display: none;">
+                                                {% for model in app.models %}
+                                                    <li class="nav-item">
+                                                        <a href="{% if model.url %}{{ model.url }}{% else %}javascript:void(0){% endif %}" class="nav-link">
+                                                            <i class="nav-icon {{ model.icon }}"></i>
+                                                            <p>{{ model.name }}</p>
+                                                        </a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
                                         </li>
                                     {% endfor %}
-                                {% endfor %}
-                            {% else %}
-                                {% for app in side_menu_list %}
-                                    <li class="nav-item has-treeview">
-                                        <a href="#" class="nav-link">
-                                            <i class="nav-icon {{ app.icon }}"></i>
-                                            <p>{{ app.name|truncatechars:21 }} <i class="fas fa-angle-left right"></i></p>
-                                        </a>
-                                        <ul class="nav nav-treeview" style="display: none;">
-                                            {% for model in app.models %}
-                                                <li class="nav-item">
-                                                    <a href="{% if model.url %}{{ model.url }}{% else %}javascript:void(0){% endif %}" class="nav-link">
-                                                        <i class="nav-icon {{ model.icon }}"></i>
-                                                        <p>{{ model.name }}</p>
-                                                    </a>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
-                                {% endfor %}
-                            {% endif %}
-                        </ul>
-                    </nav>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </aside>
         {% endif %}

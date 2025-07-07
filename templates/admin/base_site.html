@@ -160,6 +160,9 @@
   <div id="transcriptPanel" class="transcript-panel">
     <div class="transcript-header">
         <h5>📄 Transcript</h5>
+        <select id="transcriptDateDropdown" onchange="filterTranscriptByDate()">
+          <option value="">Latest</option>
+        </select>
         <button onclick="closeTranscriptPanel()" class="styled-close-btn" aria-label="Close">&times;</button>
 
     </div>

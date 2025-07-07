@@ -1,0 +1,112 @@
+<script>
+(function(d, t) {
+  var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+  v.onload = function () {
+    // Always same user ID
+    let userID = localStorage.getItem('vf_user_id');
+    if (!userID) {
+      userID = 'user_' + Math.random().toString(36).substring(2, 10);
+      localStorage.setItem('vf_user_id', userID);
+    }
+
+    // Always NEW session ID — no sessionStorage
+    const sessionID = 'session_' + Math.random().toString(36).substring(2, 10);
+
+    window.voiceflow.chat.load({
+      verify: { projectID: '68690a2e2f475b57a7733a95' },
+      url: 'https://general-runtime.voiceflow.com',
+      versionID: 'development',
+      userID: userID,
+      assistant: { persistence: 'memory' },
+      voice: { url: 'https://runtime-api.voiceflow.com' }
+    });
+
+    let lastSavedTurnCount = 0;
+    const chatHistory = [];
+    const BATCH_SIZE = 3;
+
+    function extractText(input) {
+      if (typeof input === 'string') return input;
+      if (Array.isArray(input)) {
+        return input.map(block =>
+          (block.children || []).map(child => child.text).join('')
+        ).join('');
+      }
+      return '';
+    }
+
+    function saveChat() {
+      if (chatHistory.length === 0) return;
+
+      fetch('https://97d5-2405-201-5008-c1c5-8ce3-cca-6192-a24d.ngrok-free.app/AI-Assistant/save-chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userID,
+          session_id: sessionID,
+          transcript: chatHistory
+        })
+      }).then(() => {
+        console.log('✅ Chat saved:', chatHistory.length, 'turns');
+      });
+    }
+
+    window.addEventListener('message', (event) => {
+      if (typeof event.data !== 'string') return;
+
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.type === 'voiceflow:save_session') {
+          const turns = parsed.payload?.turns || [];
+          if (turns.length > lastSavedTurnCount) {
+            const newTurns = turns.slice(lastSavedTurnCount);
+            for (const turn of newTurns) {
+              if (turn.type === 'user') {
+                chatHistory.push({
+                  source: 'user',
+                  text: turn.message,
+                  timestamp: turn.timestamp || Date.now()
+                });
+              } else if (turn.type === 'system') {
+                for (const msg of turn.messages || []) {
+                  const text = extractText(msg.text);
+                  if (text) {
+                    chatHistory.push({
+                      source: 'assistant',
+                      text,
+                      timestamp: turn.timestamp || Date.now()
+                    });
+                  }
+                }
+              }
+            }
+            lastSavedTurnCount = turns.length;
+
+            if (chatHistory.length % BATCH_SIZE === 0) {
+              saveChat();
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse Voiceflow event:', e);
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && chatHistory.length > 0) {
+        navigator.sendBeacon(
+          'https://97d5-2405-201-5008-c1c5-8ce3-cca-6192-a24d.ngrok-free.app/AI-Assistant/save-chat/',
+          new Blob([JSON.stringify({
+            user_id: userID,
+            session_id: sessionID,
+            transcript: chatHistory
+          })], { type: 'application/json' })
+        );
+      }
+    });
+
+  };
+  v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
+  v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+})(document, 'script');
+</script>

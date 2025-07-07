@@ -24,5 +24,6 @@ urlpatterns = [
     path('admin/', custom_admin_site.urls),
     path('retells/api/',include('retells.api_urls')),
     path('retells/',include('retells.urls')),
-    path('voiceflow/',include('voiceflow.urls')),
+    path('AI-Assistant/',include('AI_Assistant.urls')),
+    path('fastpromos/',include('FastPromos.urls')),
 ]
