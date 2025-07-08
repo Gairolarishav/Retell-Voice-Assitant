@@ -13,7 +13,7 @@ def product_details(request):
     if request.method == "POST":
         try:
             data = request.POST
-            user_id = request.data.get("user_id", "").strip()
+            user_id = data.get("user_id", "").strip()
             if not user_id:
                 return JsonResponse({"error": "user_id is required"}, status=400)
 
