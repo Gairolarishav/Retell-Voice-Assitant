@@ -29,3 +29,15 @@ class ChatHistory(models.Model):
         return f"Session {self.session_id} for {self.user.user_id}"
     
 
+class FAQ(models.Model):
+    question = models.TextField()
+    answer = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'faq'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"FAQ: {self.question[:50]}..."

@@ -38,7 +38,7 @@
     function saveChat() {
       if (chatHistory.length === 0) return;
 
-      fetch('https://97d5-2405-201-5008-c1c5-8ce3-cca-6192-a24d.ngrok-free.app/AI-Assistant/save-chat/', {
+      fetch('https://retell-voice-assitant.onrender.com/AI-Assistant/save-chat/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,7 +95,7 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden' && chatHistory.length > 0) {
         navigator.sendBeacon(
-          'https://97d5-2405-201-5008-c1c5-8ce3-cca-6192-a24d.ngrok-free.app/AI-Assistant/save-chat/',
+          'https://retell-voice-assitant.onrender.com/AI-Assistant/save-chat/',
           new Blob([JSON.stringify({
             user_id: userID,
             session_id: sessionID,

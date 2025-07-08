@@ -28,6 +28,7 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')  # No default! Force to be set.
 
 RETELL_API_KEY = config('RETELL_API_KEY', default='')
+VOICEFLOW_API_KEY = config('VOICEFLOW_API_KEY', default='')
 RETELL_PHONE = config('RETELL_PHONE', default='')
 
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -40,7 +41,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
 CORS_ALLOW_CREDENTIALS = True
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://retell-voice-assitant.onrender.com',
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -154,6 +157,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10  # ✅ Only 10 per page
+}
+
 JAZZMIN_SETTINGS = {
     "site_title": "Voice Assistant Admin",
     "site_brand": "Voice Assistant",
@@ -188,6 +196,11 @@ JAZZMIN_SETTINGS = {
         {
             "name": "Chat Assistant Demo",
             "url": "chatbot",
+            "icon": "fas fa-robot",
+        },
+        {
+            "name": "Add FAQ",
+            "url": "add_faqs",
             "icon": "fas fa-robot",
         }]
     },

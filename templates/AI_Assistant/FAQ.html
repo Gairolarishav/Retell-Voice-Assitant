@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #417690;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 0;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        .content-wrapper {
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .stats-bar {
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat-number {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .actions-bar {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            background: #417690;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .btn:hover {
+            background: #205067;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .faq-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .faq-table th,
+        .faq-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .faq-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .faq-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .faq-question {
+            font-weight: 500;
+            color: #333;
+            max-width: 300px;
+        }
+
+        .faq-answer {
+            color: #666;
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .created-date {
+            font-size: 11px;
+            color: #666;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .action-links {
+            white-space: nowrap;
+        }
+
+        .action-links a {
+            color: #417690;
+            text-decoration: none;
+            margin-right: 10px;
+            font-size: 11px;
+        }
+
+        .action-links a:hover {
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: #417690;
+            color: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+            font-size: 12px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #417690;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .faq-form {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            position: relative;
+        }
+
+        .faq-form.filled {
+            border-color: #417690;
+            background: rgba(65, 118, 144, 0.05);
+        }
+
+        .remove-form-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-form-btn:hover {
+            background: #c82333;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #ddd;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* .publish-notice {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #155724;
+        } */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FAQ Management</h1>
+            <p>Manage your content repository</p>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="stats-bar">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalCount">0</span> Questions
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="answerCount">0</span> Answers
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions-bar">
+                <button class="btn" onclick="openModal()">Add FAQ</button>
+                <button class="btn btn-success" onclick="publishAll()" style="display: none;" id="publishBtn">
+                    Publish All
+                </button>
+            </div>
+
+            <div class="main-content">
+                <div id="faqContainer">
+                    <div class="empty-state">
+                        No FAQs available. Click "Add FAQ" to create your first entry.
+                    </div>
+                </div>
+                <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add FAQ</div>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- <div class="publish-notice">
+                    You can add multiple questions and answers by simply clicking 'Add another
+                </div> -->
+                <div id="modalForms">
+                    <div class="faq-form">
+                        <div class="form-group">
+                            <label>Question:</label>
+                            <input type="text" placeholder="Enter question" oninput="checkFormFilled(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>Answer:</label>
+                            <textarea placeholder="Enter answer" oninput="checkFormFilled(this)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="addAnotherBtn" onclick="addNewModalForm()">Add Another</button>
+                <button class="btn btn-success" onclick="saveFAQs()" id="modalSubmitBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loader" style="display: none; text-align: center; padding: 20px;">
+        <span>Publishing FAQs...</span>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://127.0.0.1:8000/AI-Assistant';
+        let faqs = [];
+        let editingFAQ = null;
+
+        // API Functions
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || 'API request failed');
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        async function loadFAQs(page = 1) {
+            try {
+                showLoading(true);
+                const response = await apiCall(`/faqs/?page=${page}`);
+                
+                const data = response.results.data;
+                faqs = data;
+                updateDisplay();
+
+                // Render pagination buttons
+                renderPagination(response.count, page);
+            } catch (error) {
+                alert('Error loading FAQs: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function createFAQ(faqData) {
+            try {
+                const response = await apiCall('/faqs/', 'POST', faqData);
+                return response.data;
+            } catch (error) {
+                throw new Error('Failed to create FAQ: ' + error.message);
+            }
+        }
+
+        async function updateFAQ(id, faqData) {
+            try {
+                const response = await apiCall(`/faqs/${id}/`, 'PUT', faqData);
+                return response.data;
+            } catch (error) {
+                throw new Error('Failed to update FAQ: ' + error.message);
+            }
+        }
+
+        async function deleteFAQFromDB(id) {
+            try {
+                await apiCall(`/faqs/${id}/`, 'DELETE');
+            } catch (error) {
+                throw new Error('Failed to delete FAQ: ' + error.message);
+            }
+        }
+
+        async function bulkCreateFAQs(faqsData) {
+            try {
+                const response = await apiCall('/faqs/bulk_create/', 'POST', { faqs: faqsData });
+                return response.data;
+            } catch (error) {
+                throw new Error('Failed to create FAQs: ' + error.message);
+            }
+        }
+
+        // UI Functions
+        function showLoading(show) {
+            const container = document.getElementById('faqContainer');
+            if (show) {
+                container.innerHTML = '<div class="empty-state">Loading FAQs...</div>';
+            }
+        }
+
+        function openModal() {
+            editingFAQ = null;
+            document.getElementById('modal').style.display = 'block';
+            document.querySelector('.modal-title').textContent = 'Add FAQ';
+            document.getElementById('modalSubmitBtn').textContent = 'Submit';
+            // ✅ Show "Add Another" button
+            document.getElementById('addAnotherBtn').style.display = 'inline-block';
+        }
+
+        function editFAQ(id) {
+            editingFAQ = faqs.find(faq => faq.id === id);
+            if (!editingFAQ) return;
+            
+            document.getElementById('modalForms').innerHTML = `
+                <div class="faq-form filled">
+                    <div class="form-group">
+                        <label>Question:</label>
+                        <input type="text" value="${editingFAQ.question}" oninput="checkFormFilled(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Answer:</label>
+                        <textarea oninput="checkFormFilled(this)">${editingFAQ.answer}</textarea>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal').style.display = 'block';
+            document.querySelector('.modal-title').textContent = 'Edit FAQ';
+            document.getElementById('modalSubmitBtn').textContent = 'Update';
+            // ❌ Hide "Add Another" button
+            document.getElementById('addAnotherBtn').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            clearModalForms();
+        }
+
+        function clearModalForms() {
+            document.getElementById('modalForms').innerHTML = `
+                <div class="faq-form">
+                    <div class="form-group">
+                        <label>Question:</label>
+                        <input type="text" placeholder="Enter question" oninput="checkFormFilled(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Answer:</label>
+                        <textarea placeholder="Enter answer" oninput="checkFormFilled(this)"></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addNewModalForm() {
+            const formsContainer = document.getElementById('modalForms');
+            const newForm = document.createElement('div');
+            newForm.className = 'faq-form';
+            newForm.innerHTML = `
+                <button class="remove-form-btn" onclick="removeModalForm(this)">&times;</button>
+                <div class="form-group">
+                    <label>Question:</label>
+                    <input type="text" placeholder="Enter question" oninput="checkFormFilled(this)">
+                </div>
+                <div class="form-group">
+                    <label>Answer:</label>
+                    <textarea placeholder="Enter answer" oninput="checkFormFilled(this)"></textarea>
+                </div>
+            `;
+            formsContainer.appendChild(newForm);
+        }
+
+        function removeModalForm(button) {
+            const form = button.closest('.faq-form');
+            form.remove();
+        }
+
+        function checkFormFilled(element) {
+            const form = element.closest('.faq-form');
+            const question = form.querySelector('input').value.trim();
+            const answer = form.querySelector('textarea').value.trim();
+            
+            if (question && answer) {
+                form.classList.add('filled');
+            } else {
+                form.classList.remove('filled');
+            }
+        }
+
+        async function saveFAQs() {
+            const forms = document.querySelectorAll('#modalForms .faq-form');
+            let newFAQs = [];
+            
+            forms.forEach(form => {
+                const question = form.querySelector('input').value.trim();
+                const answer = form.querySelector('textarea').value.trim();
+                
+                if (question && answer) {
+                    newFAQs.push({ question, answer });
+                }
+            });
+            
+            if (newFAQs.length === 0) {
+                alert('Please add at least one question and answer.');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                if (editingFAQ) {
+                    // Update existing FAQ
+                    await updateFAQ(editingFAQ.id, newFAQs[0]);
+                    alert('FAQ updated successfully!');
+                } else {
+                    // Create new FAQ(s)
+                    if (newFAQs.length === 1) {
+                        await createFAQ(newFAQs[0]);
+                        alert('FAQ added successfully!');
+                    } else {
+                        await bulkCreateFAQs(newFAQs);
+                        alert(`${newFAQs.length} FAQs successfully!`);
+                    }
+                }
+                
+                await loadFAQs();
+                closeModal();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function updateDisplay() {
+            const container = document.getElementById('faqContainer');
+            const totalCount = document.getElementById('totalCount');
+            const answerCount = document.getElementById('answerCount');
+            const publishBtn = document.getElementById('publishBtn');
+            
+            totalCount.textContent = faqs.length;
+            answerCount.textContent = faqs.length;
+            
+            if (faqs.length === 0) {
+                container.innerHTML = '<div class="empty-state">No FAQs available. Click "Add FAQ" to create your first entry.</div>';
+                publishBtn.style.display = 'none';
+            } else {
+                container.innerHTML = `
+                    <table class="faq-table">
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Answer</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${faqs.map((faq) => `
+                                <tr>
+                                    <td class="faq-question">${faq.question}</td>
+                                    <td class="faq-answer" title="${faq.answer}">${faq.answer}</td>
+                                    <td style="font-size: 11px; color: #666; white-space: nowrap;">${formatDate(faq.created_at)}</td>
+                                    <td class="action-links">
+                                        <a href="#" onclick="editFAQ(${faq.id})">Edit</a>
+                                        <a href="#" onclick="deleteFAQ(${faq.id})" style="color: #dc3545;">Delete</a>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                publishBtn.style.display = 'inline-block';
+            }
+        }
+
+        async function deleteFAQ(id) {
+            if (confirm('Are you sure you want to delete this FAQ?')) {
+                try {
+                    showLoading(true);
+                    await deleteFAQFromDB(id);
+                    alert('FAQ deleted successfully!');
+                    await loadFAQs();
+                } catch (error) {
+                    alert('Error deleting FAQ: ' + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            }
+        }
+
+        async function publishAll() {
+            if (faqs.length === 0) {
+                alert('No FAQs to publish!');
+                return;
+            }
+
+            if (confirm(`Publish ${faqs.length} FAQ(s) to the platform?`)) {
+                const loader = document.getElementById('loader');
+                loader.style.display = 'block'; // Show loader
+                try {
+                    const response = await fetch('https://retell-voice-assitant.onrender.com/AI-Assistant/upload-faqs/', {
+                        method: 'GET', // or 'POST' if your view only accepts POST
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    const result = await response.json();
+                    loader.style.display = 'none'; // Hide loader
+
+                    if (result.success) {
+                        alert('FAQs published to Voiceflow successfully!');
+                    } else {
+                        alert('Failed to publish FAQs: ' + result.error);
+                    }
+                } catch (error) {
+                    loader.style.display = 'none'; // Hide loader
+                    alert('Error publishing FAQs: ' + error.message);
+                }
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        function renderPagination(totalCount, currentPage) {
+            const perPage = 10;
+            const totalPages = Math.ceil(totalCount / perPage);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.textContent = i;
+                if (i === currentPage) {
+                    btn.style.background = '#205067';
+                }
+                btn.onclick = () => loadFAQs(i);
+                pagination.appendChild(btn);
+            }
+        }
+
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFAQs();
+        });
+    </script>
+</body>
+</html>

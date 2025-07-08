@@ -6,7 +6,7 @@ annotated-types==0.7.0
 anyio==4.9.0
 asgiref==3.8.1
 attrs==25.3.0
-cachetools==5.5.2y
+cachetools
 certifi==2025.4.26
 cffi==1.17.1
 charset-normalizer==3.4.2
@@ -58,3 +58,5 @@ tzlocal==5.3.1
 urllib3==2.4.0
 whitenoise==6.9.0
 yarl==1.20.1
+gunicorn
+django-cors-headers
