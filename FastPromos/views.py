@@ -13,13 +13,13 @@ def product_details(request):
     if request.method == "POST":
         try:
             data = request.POST
-            user_id = data.get("user_id")
+            user_id = request.data.get("user_id", "").strip()
             if not user_id:
                 return JsonResponse({"error": "user_id is required"}, status=400)
 
             # ✅ Match existing ChatUser with user_id
             try:
-                chat_user = ChatUser.objects.get(user_id=user_id)
+                chat_user = ChatUser.objects.get(user_id__iexact=user_id)
             except ChatUser.DoesNotExist:
                 return JsonResponse({"error": "ChatUser with given user_id does not exist"}, status=404)
 
