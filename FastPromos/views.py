@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import ProductDetails
+from AI_Assistant.models import ChatUser
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 import json
@@ -12,8 +13,18 @@ def product_details(request):
     if request.method == "POST":
         try:
             data = request.POST
+            user_id = data.get("user_id")
+            if not user_id:
+                return JsonResponse({"error": "user_id is required"}, status=400)
 
-            order = ProductDetails.objects.create(
+            # ✅ Match existing ChatUser with user_id
+            try:
+                chat_user = ChatUser.objects.get(user_id=user_id)
+            except ChatUser.DoesNotExist:
+                return JsonResponse({"error": "ChatUser with given user_id does not exist"}, status=404)
+
+            product  = ProductDetails.objects.create(
+                user_id = chat_user,
                 product_id=data.get("product_id"),
                 product_name=data.get("product_name"),
                 product_color=data.get("product_color"),
@@ -25,7 +36,7 @@ def product_details(request):
                 post_code=data.get("post_code"),
             )
             return JsonResponse({
-                "message": f"Order saved successfully for {data.get("product_name")} — Order ID: {order.id}"
+                "message": f"Quote request saved successfully for {data.get("product_name")} — Order ID: {product.id}"
             }, status=201)
 
         except Exception as e:

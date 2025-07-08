@@ -1,7 +1,9 @@
 from django.db import models
+from AI_Assistant.models import ChatUser  # Adjust the import path as needed
 
 # Create your models here.
 class ProductDetails(models.Model):
+    user = models.ForeignKey(ChatUser, on_delete=models.CASCADE)
     product_id = models.CharField(max_length=255)
     product_name = models.CharField(max_length=255)
     product_color = models.CharField(max_length=100)
