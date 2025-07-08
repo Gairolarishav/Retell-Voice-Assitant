@@ -10,6 +10,8 @@ from rest_framework.decorators import action
 from .serializers import FAQSerializer
 from django.conf import settings
 import requests
+from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
 
 
 
@@ -94,10 +96,12 @@ def available_sessions(request):
         for chat in sessions
     ]
     return JsonResponse({"sessions": session_list})
-        
+
+@method_decorator(csrf_exempt, name='dispatch')
 class FAQViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.all()
     serializer_class = FAQSerializer
+    permission_classes = [AllowAny]  # ADD THIS LINE
     
     def list(self, request):
         """Get paginated FAQs"""
@@ -175,7 +179,7 @@ class FAQViewSet(viewsets.ModelViewSet):
             return Response({
                 'success': True,
                 'message': 'FAQ deleted successfully'
-            })
+            }, status=status.HTTP_204_NO_CONTENT)  # Changed status code
         except FAQ.DoesNotExist:
             return Response({
                 'success': False,
