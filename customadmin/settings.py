@@ -29,6 +29,7 @@ SECRET_KEY = config('SECRET_KEY')  # No default! Force to be set.
 
 RETELL_API_KEY = config('RETELL_API_KEY', default='')
 VOICEFLOW_API_KEY = config('VOICEFLOW_API_KEY', default='')
+AUTH_TOKEN = config('AUTH_TOKEN', default='')
 RETELL_PHONE = config('RETELL_PHONE', default='')
 
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -55,6 +56,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',
     'retells',  # use the config class'django_apscheduler',
     'AI_Assistant.apps.AI_AssistantConfig',
     'FastPromos'
@@ -158,8 +161,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',  # Default to secure
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10  # ✅ Only 10 per page

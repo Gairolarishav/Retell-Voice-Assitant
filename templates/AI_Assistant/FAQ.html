@@ -408,6 +408,7 @@
     <script>
         // Configuration
         const API_BASE_URL = 'https://retell-voice-assitant.onrender.com/AI-Assistant';
+        const API_TOKEN = "{{ token }}";  // Replace with your DRF token
         let faqs = [];
         let editingFAQ = null;
 
@@ -418,27 +419,38 @@
                 method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Token ${API_TOKEN}`,
                 },
             };
-            
+
             if (data) {
                 options.body = JSON.stringify(data);
             }
-            
+
             try {
                 const response = await fetch(url, options);
-                const result = await response.json();
-                
+
+                // ✅ Check for empty body
+                const contentType = response.headers.get("content-type");
+                const isJson = contentType && contentType.includes("application/json");
+
                 if (!response.ok) {
-                    throw new Error(result.message || 'API request failed');
+                    let errorText = isJson ? await response.json() : await response.text();
+                    throw new Error(errorText?.message || errorText || 'API request failed');
                 }
-                
-                return result;
+
+                // ✅ If it's JSON and has body, parse it
+                if (isJson) {
+                    return await response.json();
+                } else {
+                    return null;  // No JSON to parse (e.g. 204)
+                }
             } catch (error) {
                 console.error('API Error:', error);
                 throw error;
             }
         }
+
 
         async function loadFAQs(page = 1) {
             try {
